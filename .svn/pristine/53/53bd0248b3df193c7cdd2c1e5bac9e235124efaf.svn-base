@@ -1,0 +1,113 @@
+#include <Servo.h>
+#include <IRremote.h>
+
+/** 
+* On utilise des #define plutôt que des variables sur les constantes
+* cela prend moins de place en mémoire vive !! (car remplacées lors de la complilation)
+*/
+
+#define BuzzerPin 13
+
+#define red 12
+#define yellow 11
+#define green 10
+
+#define EnableServo 14  // activation des servos (la pin 14 est en faite la pin A0)
+Servo Lleg;  // create servo object to control a servo 
+Servo Rleg;
+Servo Lfoot;
+Servo Rfoot;
+
+int RFcenter = 105;    // variable to store the center servo position 
+int LLcenter = 73;
+int RLcenter = 103;
+int LFcenter = 94;
+int tAngle = 30; //tilt angle
+int uAngle = 35; //turn angle
+int sAngle = 35; //swing angle
+
+boolean memo = true;
+int RECV_PIN = 13;
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+int Obstacle=0;
+
+void setup(){
+  Lleg.attach(5);  // attaches the servo on pin x to the servo object 
+  Rleg.attach(6);  // attaches the servo on pin x to the servo object 
+  Lfoot.attach(4);  // attaches the servo on pin x to the servo object 
+  Rfoot.attach(7);  // attaches the servo on pin x to the servo object 
+  CenterServos(); //center the servos
+  
+  pinMode(green, OUTPUT);	digitalWrite(green, LOW);
+  pinMode(yellow, OUTPUT);	digitalWrite(yellow, LOW);
+  pinMode(red, OUTPUT);		digitalWrite(red, LOW);
+  
+  pinMode(BuzzerPin, OUTPUT);	digitalWrite(BuzzerPin, LOW);
+  //Buzzer.PlayMelody();
+  
+  Serial.begin(19200);
+  Serial.println("Ready");
+  irrecv.enableIRIn(); // Start the receiver
+ 
+  BuzzerBeep();
+}
+
+void loop() { 
+  Obstacle = testIR();
+  switch (Obstacle){
+     case 0: break;	// stop
+     case 1: Forward(1,30); break;	// avant
+     case 2: TurnLeft(2,30); break;	// droite
+     case 3: TurnRight(2,30); break;	// droite
+     case 4: Back(2,30); break;	// arriere
+  }
+}
+
+void CenterServos() { 
+    Lleg.write(LLcenter);
+    // tell servo to go to position in variable 'center' 
+    Rleg.write(RLcenter);
+    // tell servo to go to position in variable 'center' 
+    Lfoot.write(LFcenter);
+    // tell servo to go to position in variable 'center' 
+    Rfoot.write(RFcenter);
+    // tell servo to go to position in variable 'center' 
+    delay(100);
+    // waits 100ms for the servos to reach the position 
+}
+
+void BuzzerBeep(){
+    digitalWrite(BuzzerPin, HIGH);
+    delay(100);
+    digitalWrite(BuzzerPin, LOW);
+}
+
+//La fonction ci-dessous fait clignoter la LED correspondant à la distance.
+//Le clignotement est de plus en plus rapide à mesure que l'objet se rapproche.
+void blink(int pause, int ledPin) {
+  pause = pause * 10;
+  digitalWrite(ledPin, HIGH);
+  delay(pause);
+  digitalWrite(ledPin, LOW);
+  delay(10);
+}
+
+
+int testIR() {
+  if (irrecv.decode(&results)) {
+    Serial.print("0x"); Serial.println(results.value, HEX);
+    irrecv.resume(); // Receive the next value
+    
+    switch(results.value) {
+      case 0xFD807F : return 1; break;		// V+
+      case 0xFD20DF : return 2; break;		// <<
+      case 0xFDA05F : return 0; break;		// >||
+      case 0xFD609F : return 3; break;		// >>
+      case 0xFD906F : return 4; break;		// V-
+      case 0xFD00FF : memo=!memo; break;	// POWER
+    }
+    BuzzerBeep();
+  }
+  if(!memo) { return 0; } else { return Obstacle;}
+}

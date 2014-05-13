@@ -1,0 +1,1 @@
+Sketch de test de distance pour le sonar ultrasonic HC-SR04 suite à l'abandon de la librairie "NewPing" dus à un conflit de timer.

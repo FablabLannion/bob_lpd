@@ -1,0 +1,147 @@
+#include "pitches.h" // inclusion du fichier de notes pour le buzzer
+#define BuzzerPin 9
+
+void setup_buzzer(){
+	pinMode(BuzzerPin, OUTPUT);	digitalWrite(BuzzerPin, LOW);
+	pinMode(BuzzerPin-1, OUTPUT);	digitalWrite(BuzzerPin-1, LOW);
+	
+	BuzzerDebut();
+}
+void BuzzerBeep(){
+  //digitalWrite(BuzzerPin, HIGH); delay(100); digitalWrite(BuzzerPin, LOW);
+  tone(BuzzerPin, NOTE_AS4); delay(150); noTone(BuzzerPin);
+}
+void BuzzerDebut(){
+  tone(BuzzerPin, NOTE_AS4); delay(150); noTone(BuzzerPin);
+  tone(BuzzerPin, NOTE_CS5); delay(150); noTone(BuzzerPin);
+  tone(BuzzerPin, NOTE_AS4); delay(150); noTone(BuzzerPin);
+}
+int notes[] = { 0,
+	NOTE_C4, NOTE_CS4, NOTE_D4, NOTE_DS4, NOTE_E4, NOTE_F4, NOTE_FS4, NOTE_G4, NOTE_GS4, NOTE_A4, NOTE_AS4, NOTE_B4,
+	NOTE_C5, NOTE_CS5, NOTE_D5, NOTE_DS5, NOTE_E5, NOTE_F5, NOTE_FS5, NOTE_G5, NOTE_GS5, NOTE_A5, NOTE_AS5, NOTE_B5,
+	NOTE_C6, NOTE_CS6, NOTE_D6, NOTE_DS6, NOTE_E6, NOTE_F6, NOTE_FS6, NOTE_G6, NOTE_GS6, NOTE_A6, NOTE_AS6, NOTE_B6,
+	NOTE_C7, NOTE_CS7, NOTE_D7, NOTE_DS7, NOTE_E7, NOTE_F7, NOTE_FS7, NOTE_G7, NOTE_GS7, NOTE_A7, NOTE_AS7, NOTE_B7
+};
+
+void play_rtttl(char *p) {
+	// Absolutely no error checking in here
+	byte default_dur = 4;
+	byte default_oct = 6;
+	int bpm = 63;
+	int num, blockage;
+	long wholenote;
+	long duration;
+	byte note;
+	byte scale;
+        int xi=0;
+	
+	// format: d=N,o=N,b=NNN:
+	// find the start (skip name, etc)
+	while(*p != ':') p++;    // ignore name
+	p++;                     // skip ':'
+	
+	if(*p == 'd') {		// get default duration
+		p++; p++;              // skip "d="
+		num = 0;
+		while(isdigit(*p)) { num = (num * 10) + (*p++ - '0'); }
+		if(num > 0) default_dur = num;
+		p++;                   // skip comma
+	}
+	if(*p == 'o') {		// get default octave
+		p++; p++;              // skip "o="
+		num = *p++ - '0';
+		if(num >= 3 && num <=7) default_oct = num;
+		p++;                   // skip comma
+	}
+	if(*p == 'b') {		// get BPM
+		p++; p++;              // skip "b="
+		num = 0;
+		while(isdigit(*p)) { num = (num * 10) + (*p++ - '0'); }
+		bpm = num;
+		p++;                   // skip colon
+	}
+	// BPM usually expresses the number of quarter notes per minute
+	wholenote = (60 * 1000L / bpm) * 4;  // this is the time for whole note (in milliseconds)
+	
+	// now begin note loop
+	while(*p) {
+		// first, get note duration, if available
+		num = 0;
+		while(isdigit(*p)) { num = (num * 10) + (*p++ - '0'); }
+		
+		if(num) duration = wholenote / num;
+		else duration = wholenote / default_dur;  // we will need to check if we are a dotted note after
+		
+		// now get the note
+		note = 0;	blockage = 0;
+		Serial.print(p[0]);
+		Serial.print(" ");
+		Serial.println(num);
+		switch(*p) {
+			case 'c':	note = 1;	break;	// note
+			case 'd':	note = 3;	break;	// note
+			case 'e':	note = 5;	break;	// note
+			case 'f':	note = 6;	break;	// note
+			case 'g':	note = 8;	break;	// note
+			case 'a':	note = 10;	break;	// note
+			case 'b':	note = 12;	break;	// note
+			
+			// choregraphie
+			case 'z':	blockage=1;	
+				     if(num==1) { TiltRightUp(uAngle,0); } 
+				else if(num==2) { TiltLeftUp(uAngle,0); } 
+				else { TiltLeftUp(0,0); }
+				Serial.print("chore z "); Serial.println(num);
+				break;
+			case 'y':	blockage=1;	
+				     if(num==1) { Lfoot.write(LFcenter-uAngle/1); } 
+				else if(num==2) { Lfoot.write(LFcenter-uAngle/2); }
+				else if(num==3) { Lfoot.write(LFcenter-uAngle*0); }
+				else if(num==4) { Lfoot.write(LFcenter+uAngle/2); }
+				else if(num==5) { Lfoot.write(LFcenter+uAngle/1); }
+				Serial.print("chore y "); Serial.println(num);
+				break;
+			case 'x':	blockage=1;	
+				     if(num==1) { Rfoot.write(RFcenter+uAngle/1); } 
+				else if(num==2) { Rfoot.write(RFcenter+uAngle/2); }
+				else if(num==3) { Rfoot.write(RFcenter+uAngle*0); }
+				else if(num==4) { Rfoot.write(RFcenter-uAngle/2); }
+				else if(num==5) { Rfoot.write(RFcenter-uAngle/1); }
+				Serial.print("chore x "); Serial.println(num);
+				break;
+			case 'w':	blockage=1;	xi=0;
+				     if(num==1) { xi=uAngle*2;	Lfoot.write(LFcenter-xi);		Rfoot.write(RFcenter+xi); } 
+				else if(num==2) { xi=uAngle*1;	Lfoot.write(LFcenter-xi);		Rfoot.write(RFcenter+xi); }
+				else if(num==3) { xi=uAngle*0;	Lfoot.write(LFcenter-xi);		Rfoot.write(RFcenter+xi); }
+				else if(num==4) { xi=uAngle*1;	Lfoot.write(LFcenter+xi);		Rfoot.write(RFcenter-xi); }
+				else if(num==5) { xi=uAngle*2;	Lfoot.write(LFcenter+xi);		Rfoot.write(RFcenter-xi); }
+				Serial.print("chore w "); Serial.println(num);
+				break;
+				
+			case 'p':	default:	note = 0;	// note
+		}
+		p++;
+		// now, get optional '#' sharp
+		if(*p == '#') {		note++;		p++;	}
+		// now, get optional '.' dotted note
+		if(*p == '.') {      duration += duration/2;      p++;	}
+		// now, get scale
+		if(isdigit(*p)) {	scale = *p - '0';	p++;	}
+		else {	scale = default_oct; }
+		
+		if(*p == ',') p++;       // skip comma for next note (or we may be at the end)
+		
+		// choregraphie
+		if(blockage) {
+		}
+		// now play the note
+		else if(note) {
+			tone(BuzzerPin, notes[(scale - 4) * 12 + note]);
+			delay(duration);
+			noTone(BuzzerPin);
+		}
+		else {
+			delay(duration);
+		}
+	}
+}

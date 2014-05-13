@@ -1,0 +1,55 @@
+#include <Servo.h>
+#include "pitches.h" // inclusion du fichier de notes pour le buzzer
+
+#define BuzzerPin 9
+
+#define red 12
+#define yellow 11
+#define green 10
+
+#define EnableServo 14  // activation des servos (la pin 14 est en faite la pin A0)
+Servo Lleg;  // create servo object to control a servo 
+Servo Rleg;
+Servo Lfoot;
+Servo Rfoot;
+
+int RFcenter = 105;    // variable to store the center servo position 
+int LLcenter = 73;
+int RLcenter = 103;
+int LFcenter = 94;
+int tAngle = 30; //tilt angle
+int uAngle = 35; //turn angle
+int sAngle = 35; //swing angle
+
+void setup(){
+	Lleg.attach(5);  // attaches the servo on pin x to the servo object
+	Rleg.attach(6);  // attaches the servo on pin x to the servo object
+	Lfoot.attach(4);  // attaches the servo on pin x to the servo object
+	Rfoot.attach(7);  // attaches the servo on pin x to the servo object
+	CenterServos(); //center the servos
+	
+	pinMode(green, OUTPUT);	digitalWrite(green, LOW);
+	pinMode(yellow, OUTPUT);	digitalWrite(yellow, LOW);
+	pinMode(red, OUTPUT);		digitalWrite(red, LOW);
+	
+	pinMode(BuzzerPin, OUTPUT);	digitalWrite(BuzzerPin, LOW);
+	pinMode(BuzzerPin-1, OUTPUT);	digitalWrite(BuzzerPin-1, LOW);
+	
+	Serial.begin(19200);	Serial.println("Ready");
+	BuzzerDebut();
+	delay(1000);
+}
+
+void loop() {
+	play_rtttl("MacGyverLong:d=4,o=6,b=150:8b4,8e5,8a5,8b5,a5,8e5,8b4,8p,8e5,8a5,8b5,8a5,8e5,b4,8p,8e5,8a5,8b5,a5,8e5,8b4,8p,8a5,8d,8c,8d,8c,8b5,8a5,8b4,8e5,8a5,8b5,a5,8e5,8b4,8p,8e5,8a5,8b5,8a5,8e5,b4,8p,8e5,8a5,8b5,a5,8e5,8b4,8p,8a5,8d,8c,8d,8c,8b5,8a5,b5,8p,2b5,8p,b5,8p,a5,d.,b5,8p,2b5,8p,8b5,8p,2a5,p,8c,8c,8c,8c,8c,8c,2b5,16p,8f#5,8a5,8p,2g5,8p,8c,8c,8p,b5,8a5,8b5,8a5,8g5,8p,e,2a5,16p,8c,8c,8p,2b5,8p,8f#5,8a5,8p,2g5,8p,8c,8c,8p,4b5,8a5,8b5,8a5,8g5,8p,4e,2a5,2b5,32p,8c,8b5,8a5,c,8b5,8a5,8d,8c,8b5,d,8c,8b5,e,8d,8e,f#,b5,g,8p,f#,f,b5,8g,8e,8b5,8f#,8d,8a5,8e,8c,8g5,8d,8b5,8g5,8c,8e5,8b5,8d5,8c,8b5,8a5,8g5,a#5,a5,8g,8g5,8d,8g5,8d#,8d#5,8a#5,8a5,8g5,8g4,8d5,8g4,8d#5,8g4,8a#4,8a4,8g4,8g4,8g4,8g4,8g4,8g4,8g4");	delay(1000);
+//	play_rtttl("MacGyver:d=4,o=6,b=127:8c,8c,8c,8c,8c,8c,2b5,8f_5,8a5,8p,2g5,8c,8c,8p,b5,8a5,8b5,8a5,8g5,8p,e,a.5,16p,b.5,16p,c,8b5,8a5,c");	delay(1000);
+	play_rtttl("MacGyver:d=4,o=6,b=127:1z,1y,8c,8c,8c,8c,8c,8c,2y,2b5,8f_5,8a5,3y,8p,2g5,8c,8c,4y,8p,b5,8a5,8b5,8a5,8g5,5y,8p,e,a.5,16p,6y,3z,b.5,2z,16p,c,8b5,8a5,c");	delay(1000);
+	BuzzerBeep();	delay(1000);
+}
+void CenterServos() { 
+	Lleg.write(LLcenter);	// tell servo to go to position in variable 'center' 
+	Rleg.write(RLcenter);	// tell servo to go to position in variable 'center' 
+	Lfoot.write(LFcenter);	// tell servo to go to position in variable 'center' 
+	Rfoot.write(RFcenter);	// tell servo to go to position in variable 'center' 
+	delay(100);				// waits 100ms for the servos to reach the position 
+}

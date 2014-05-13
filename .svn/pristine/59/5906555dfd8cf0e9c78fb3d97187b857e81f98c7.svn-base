@@ -1,0 +1,46 @@
+#include <IRremote.h>
+
+int RECV_PIN = 13;
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+
+void setup_IR() {
+  irrecv.enableIRIn(); // Start the receiver
+}
+
+int testIR() {
+  if (irrecv.decode(&results)) {
+    Serial.print("0x"); Serial.println(results.value, HEX);
+    irrecv.resume(); // Receive the next value
+    
+    switch(results.value) {
+      case 0xFD807F : return 1; break;          // V+
+      case 0xFD20DF : return 2; break;          // <<
+      case 0xFDA05F : return 0; break;          // >||
+      case 0xFD609F : return 3; break;          // >>
+      case 0xFD906F : return 4; break;          // V-
+      case 0xFD00FF : memoIR=!memoIR; break;        // POWER
+      case 0xFD40BF : modeAuto=!modeAuto; break;	// FCT / STOP
+    }
+    BuzzerBeep();
+  }
+  if(!memoIR && !modeAuto) { return 0; } else { return Obstacle;}
+}
+void IRleds() {
+  digitalWrite(green, LOW);
+  digitalWrite(yellow, LOW);
+  digitalWrite(red, LOW);
+  
+  switch(Obstacle) {
+    case 1 : ledPin=yellow; break;
+    case 2 : ledPin=red; break;
+    case 3 : case 4 : ledPin=green; break;
+  }
+  digitalWrite(ledPin, HIGH);
+  if(!memoIR) {	delay(200);	digitalWrite(ledPin, LOW); }
+  if(Obstacle==4) {
+    ledPin=red;
+    digitalWrite(ledPin, HIGH);
+    if(!memoIR) {	delay(200);	digitalWrite(ledPin, LOW); }
+  }
+}

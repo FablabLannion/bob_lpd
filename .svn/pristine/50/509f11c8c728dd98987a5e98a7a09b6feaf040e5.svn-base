@@ -1,0 +1,88 @@
+#include "Servo.h"
+#define servLl 5
+#define servRl 6
+#define servLf 7
+#define servRf 4
+int RFcenter = 105;    // variable to store the center servo position 
+int LLcenter = 73;
+int RLcenter = 103;
+int LFcenter = 94;
+int tAngle = 30; //tilt angle
+int uAngle = 35; //turn angle
+int sAngle = 35; //swing angle
+
+#define EnableServo 14
+
+Servo Lleg;  // createS servo object to control a servo 
+Servo Rleg;
+Servo Lfoot;
+Servo Rfoot;
+int valtest=0;
+int regl=1;
+char *test[]={
+	"Rleg",
+	"Lleg",
+	"Rfoot",
+	"Lfoot",
+};
+
+void setup() {
+	Lleg.attach(servLl);  Rleg.attach(servRl);  Lfoot.attach(servLf);  Rfoot.attach(servRf);
+	Serial.begin(19200);
+/*	Serial.println("Detail des touches utilisees :");
+	Serial.println("     a => Changement de servo vers la gauche");
+	Serial.println("     z => Changement de servo vers la droite");
+	Serial.println("     s => +1     d => +5     f => +10");
+	Serial.println("     x => -1     c => -5     v => -10");
+	Serial.println("     q => Valeur");
+	Serial.println("");
+	
+	Serial.println("Ordre :");
+	int size = sizeof(test) / sizeof(int);
+	for (int ite = 0; ite < size; ite++) { Serial.print("     "); Serial.println(test[ite]); }
+	Serial.println("");
+*/	
+	Serial.print("Reglage "); Serial.println(test[regl-1]);
+	valtest = testVal(regl);
+}
+void loop(){
+	char txt = (char)Serial.read();
+	if(Serial.available() > 0) {
+		Serial.println(txt); 
+/*		String msg="";
+		
+			 if(&txt == "s") { 	valtest = valtest + 1;		msg=" +1 "; }
+		else if(&txt == "x") {	valtest = valtest - 1;		msg=" -1 "; }
+		else if(&txt == "d") {	valtest = valtest + 5;		msg=" +5 "; }
+		else if(&txt == "c") {	valtest = valtest - 5;		msg=" -5 "; }
+//	else if(&txt == "f") {	valtest = valtest + 10;		msg=" +10 "; }
+//	else if(&txt == "v") {	valtest = valtest - 10;		msg=" -10 "; }
+		else if(&txt == "a") { regl--; if(regl==0) { regl=4; } msg="Reglage de "; msg.concat(test[regl-1]); valtest = testVal(regl); }
+		else if(&txt == "z") { regl++; if(regl==5) { regl=1; } msg="Reglage de "; msg.concat(test[regl-1]); valtest = testVal(regl); }
+		else if(&txt == "q") { Serial.println("Reglage fini"); regle(); }
+		else { msg = "Touche inconnue."; }
+	
+		if(regl==1) { Rleg.write(valtest); }
+		if(regl==2) { Lleg.write(valtest); }
+		if(regl==3) { Rfoot.write(valtest); }
+		if(regl==4) { Lfoot.write(valtest); }
+		Serial.println(msg);
+		Serial.println(valtest);
+*/	}
+}
+  
+void regle(){	//routine de sous-reglage
+	Serial.println("Valeurs definitives :");
+	Serial.println(RFcenter);
+	Serial.println(LLcenter);
+	Serial.println(RLcenter);
+	Serial.println(LFcenter);
+	regl=0;
+}
+int testVal(int x) {
+	if(x==1) { return RLcenter; }
+	if(x==2) { return LLcenter; }
+	if(x==3) { return RFcenter; }
+	if(x==4) { return LFcenter; }
+}
+

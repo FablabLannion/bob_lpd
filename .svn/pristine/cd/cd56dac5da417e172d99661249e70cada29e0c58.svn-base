@@ -1,0 +1,225 @@
+#include <Servo.h> 
+
+//#define IRsensorPin 18
+//#define IRledPin1 17
+//#define IRledPin2 11
+#define EnableServo 14
+#define BuzzerPin 13
+//#define ButtonPin 2
+#define red 10
+#define yellow 11
+#define green 12
+
+
+Servo Lleg;  // create servo object to control a servo 
+Servo Rleg;
+Servo Lfoot;
+Servo Rfoot;
+
+#define RFcenter = 105;    // variable to store the center servo position 
+#define LLcenter = 73;
+#define RLcenter = 103;
+#define LFcenter = 94;
+#define tAngle = 30; //tilt angle
+#define uAngle = 35; //turn angle
+#define sAngle = 35; //swing angle
+long cm;                // variable pour stocker la distance de l'objet en cm
+
+void setup(){
+  Lleg.attach(5);  // attaches the servo on pin x to the servo object 
+  Rleg.attach(6);  // attaches the servo on pin x to the servo object 
+  Lfoot.attach(4);  // attaches the servo on pin x to the servo object 
+  Rfoot.attach(7);  // attaches the servo on pin x to the servo object 
+  
+  pinMode(green, OUTPUT);
+  pinMode(yellow, OUTPUT);
+  pinMode(red, OUTPUT);
+
+  //pinMode(EnableServo,OUTPUT); 
+ // digitalWrite(EnableServo,HIGH); //this turns on the power to the servos
+  //CenterServos(); //center the servos
+ // delay(500);
+  //digitalWrite(EnableServo,LOW); //turn power off after centering
+
+  //pinMode(Red, OUTPUT);
+  //digitalWrite(Red, LOW);
+  //pinMode(Blue, OUTPUT);
+  //digitalWrite(Blue, LOW);
+  //pinMode(Green, OUTPUT);
+  //digitalWrite(Green, LOW);
+  
+  //pinMode(IRledPin1, OUTPUT);
+  //digitalWrite(IRledPin1, LOW);
+  //pinMode(IRledPin2, OUTPUT);
+  //digitalWrite(IRledPin2, LOW);
+
+  pinMode(BuzzerPin, OUTPUT);
+  digitalWrite(BuzzerPin, LOW);
+  //Buzzer.PlayMelody();
+  
+  //pinMode(ButtonPin, INPUT);
+  //digitalWrite(ButtonPin, HIGH); //pull up activated
+  
+  Serial.begin(19200);
+  Serial.print("Ready");
+ 
+
+  //while (digitalRead(ButtonPin) != LOW){ 
+    //do nothing until the button pressed
+  //}
+    BuzzerBeep();
+  for(int i=0;i<5;++i){
+    delay(1000);
+  }
+    BuzzerBeep();
+}
+
+/*void loop(){
+  //desativation détection par yvon, aller en avant
+Forward(1,30); //one step Forward
+}
+*/
+
+//=====================================
+#include <NewPing.h>
+
+/** definition de constantes
+* On utilise des #define plutôt que des variables
+* cela prend moins de place en mémoire !!
+*/
+// Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+#define MAX_DISTANCE 300
+// Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define TRIGGER_PIN  3
+// Arduino pin tied to echo pin on the ultrasonic sensor.
+#define ECHO_PIN     2
+
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
+int Obstacle=0;
+  
+  // on envoi 5 pings, on récupère la moyenne
+  // puis on converti ça en cm
+  // voir ici pour la doc des méthodes utilisées
+  // http://code.google.com/p/arduino-new-ping/wiki/Using_NewPing_Syntax
+ void loop()
+{ 
+cm = sonar.convert_cm( sonar.ping_median() ); // send ping and get distance in cm
+Serial.print(cm);
+Serial.print("\t");
+  if(cm >0 && cm < 10)          // objet très proche
+  {
+    blink(cm, red);
+    Obstacle=3;
+    
+  }
+  else if(cm >= 10 && cm < 30)  // distance moyenne
+  {
+     blink(cm, yellow);
+     Obstacle=2;
+  }
+  else if(cm >= 30)             // objet lointain
+  {
+    blink(cm, green);
+    Obstacle=0;
+  }
+  
+
+
+  Serial.print(Obstacle);
+  Serial.print("\t");
+   
+     switch (Obstacle){
+     case 0: //no object
+ //      digitalWrite(Green, HIGH);
+//       digitalWrite(Red, HIGH);
+       Forward(1,30); //one step Forward
+       BuzzerBeep();
+//       digitalWrite(Green, LOW);
+//       digitalWrite(Red, LOW);
+       break;
+     case 1: //object on Left
+//       digitalWrite(Green, HIGH);
+       TurnRight(2,30);
+       BuzzerBeep();
+//       digitalWrite(Green, LOW);
+       break;
+     case 2: //object on Right
+//       digitalWrite(Blue, HIGH);
+       TurnLeft(2,30);
+       BuzzerBeep();
+//       digitalWrite(Blue, LOW);
+       break;
+     case 3: //obect in Front (both Left and Right detect the object)
+//       digitalWrite(Red, HIGH);
+       TurnLeft(4,30); //turn around
+       BuzzerBeep();
+//      digitalWrite(Red, LOW);
+       break;
+   }
+  
+}
+
+//La fonction ci-dessous fait clignoter la LED correspondant à la distance.
+//Le clignotement est de plus en plus rapide à mesure que l'objet se rapproche.
+
+void blink(int pause, int ledPin)
+{
+  pause = cm * 10;
+  digitalWrite(ledPin, HIGH);
+  delay(10);
+  digitalWrite(ledPin, LOW);
+  delay(pause);
+}
+
+
+//======================
+//void loop(){
+  //check for obstacles, if none, go Forward, if found, turn the other way
+//CheckObstacle();
+//}
+
+
+
+//void CheckObstacle(){
+//int Obstacle=0;
+//  IR38Write(IRledPin2); //turn on Left IR LED
+//   if (digitalRead(IRsensorPin)==LOW){ //check sensor
+//     BuzzerBeep();
+//     Obstacle=Obstacle+1;
+//   }
+//   IR38Write(IRledPin1); //turn on Right IR LED
+//   if (digitalRead(IRsensorPin)==LOW){ //check sensor
+//     BuzzerBeep();
+//     Obstacle=Obstacle+2;
+//   }
+
+//void loop(){
+
+ //}
+
+/*void IR38Write(byte LedPin) {
+  for(int i = 0; i <= 384; i++) { //10ms burst of 38kHz signal
+    digitalWrite(LedPin, HIGH);
+    delayMicroseconds(13);
+    digitalWrite(LedPin, LOW);
+    delayMicroseconds(13);
+  }
+}
+*/
+void CenterServos() 
+{ 
+    Lleg.write(LLcenter);              // tell servo to go to position in variable 'center' 
+    Rleg.write(RLcenter);              // tell servo to go to position in variable 'center' 
+    Lfoot.write(LFcenter);              // tell servo to go to position in variable 'center' 
+    Rfoot.write(RFcenter);              // tell servo to go to position in variable 'center' 
+    delay(100);                     // waits 100ms for the servos to reach the position 
+}
+
+void BuzzerBeep(){
+    digitalWrite(BuzzerPin, HIGH);
+    delay(100);
+    digitalWrite(BuzzerPin, LOW);
+}
+
+
