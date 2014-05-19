@@ -3,7 +3,7 @@ session_start();
 include("rtttl.config.php");
 
 $_SESSION["langue"]="traduction/fr.php";
-foreach(array("page","x","tout","chor", "d") as $c) { $$c=@$_REQUEST[$c]; }
+foreach(array("page","tout","chor","x","d") as $c) { $$c=addslashes(htmlspecialchars(strip_tags(@$_REQUEST[$c]))); }
 
 $connect = @mysql_connect($mysqlServeur,$mysqlUtilisateur,$mysqlPassword) or die("<table border=0 width=100% height=100%><tr><td align=middle valign=middle><h1>Pas de connection sur<br><br> la base de donn&#233;es !</h1>");
 @mysql_select_db($mysqlNomDeLaBase) or die("<table border=0 width=100% height=100%><tr><td align=middle valign=middle><h1>Base de donn&#233;es introuvable !</h1>"); $connec=true; 
@@ -14,6 +14,10 @@ if(empty($page)) {
 	mysql_query("CREATE TABLE IF NOT EXISTS `bww_rtttl` ( `id` int(3) NOT NULL auto_increment, `nom` varchar(50) NOT NULL default '', `txt` text NOT NULL, `anim` varchar(50) NOT NULL default '', UNIQUE KEY `nom` (`nom`), KEY `id` (`id`)) ENGINE=MyISAM DEFAULT CHARSET=latin1;");
 	mysql_query("CREATE TABLE IF NOT EXISTS `bww_rtttl_anim` ( `id` int(3) NOT NULL auto_increment, `ref` int(3) NOT NULL default '0', `anim` text NOT NULL, KEY `id` (`id`) ) ENGINE=MyISAM DEFAULT CHARSET=latin1;");
 	echo "
+<head>
+	<meta http-equiv='content-type' content='text/html; charset=UTF-8'>
+	<title>Librairie RTTTL</title>
+</head>
 	<frameset COLS='*,455' >
 		<frame src='?page=liste' name=liste>
 		<frameset ROWS='200,*' frameborder=0>
@@ -39,23 +43,23 @@ if($page=="melodie") {
 }
 elseif($page=="chore") {
 	$defotxt="";
-	if(!empty($_POST['chorew'])) {
-		if(strlen($_POST['chorew'])>$d) {
+	if(!empty($chor)) {
+		if(strlen($chor)>$d) {
 			$rq = "SELECT * FROM `".$tableSQLpre.$tableSQLnomA."` ";
 			$result = mysql_query($rq) or die(mysql_error()); $nb = 1+mysql_num_rows($result);
 			
-			$txt = 'INSERT `'.$tableSQLpre.$tableSQLnomA.'` SET `ref`="'.$x.'", `anim`="'.$_POST['chorew'].'"';
+			$txt = 'INSERT `'.$tableSQLpre.$tableSQLnomA.'` SET `ref`="'.$x.'", `anim`="'.$chor.'"';
 			
 			$sqlTxt = "select * from `".$tableSQLpre.$tableSQLnom."` WHERE `id`=$x";	$sqle = mysql_query($sqlTxt);
 			while($sqle && $row = mysql_fetch_assoc($sqle)) {
 				$txs = 'UPDATE `'.$tableSQLpre.$tableSQLnom.'` SET `anim`="'.((!empty($row['anim']))?$row['anim'].'-':'').''.$nb.'" WHERE `id`="'.$x.'"';
 				echo "<h1>".$row['nom']."</h1>";
 			}
-			if(01) { echo "$txs<br>$txt<hr>"; print_r($_REQUEST); } else {	mysql_query($txt) or print("<b>".mysql_error()."</b>"); }
+			if(0) { echo "$txs<br>$txt<hr>"; print_r($_REQUEST); } else {	mysql_query($txt) or print("<b>".mysql_error()."</b>"); }
 			echo "Insertion faite.";
 		}
 		else {
-			$defotxt=$_POST['chorew'];
+			$defotxt=$chor;
 			echo "<h3>Il n'y a pas assez de note par rapport à l'origine</h3>";
 		}
 	}
@@ -69,9 +73,10 @@ elseif($page=="chore") {
 	}
 	if(!$i) { echo "<br><br>Aucune pour le moment.<br>"; }
 	echo "
+	$d
 	<form method=post>
 	<h2>Ajout</h2>
-	<textarea name=chorew style='width: 450px; height: 60px;'>$defotxt</textarea><br>
+	<textarea name=chor style='width: 450px; height: 60px;'>$defotxt</textarea><br>
 	<input type=submit value='Ajouter'>
 	</form>
 	";
@@ -121,7 +126,7 @@ pacman:d=4,o=5,b=112:32b,32p,32b6,32p,32f#6,32p,32d#6,32p,32b6,32f#6,16p,16d#6,1
 		";
 	}
 	else {
-		$debug=01;
+		$debug=0;
 		$ref=$tout; $t=explode(":", trim($ref));
 		if(!empty($ref) & !empty($t[0])) {
 			$txt = 'INSERT `'.$tableSQLpre.$tableSQLnom.'` SET  `id`="'.substr($page,4).'",`nom`="'.$t[0].'", `txt`="'.implode(":", $t).'"';
@@ -136,13 +141,12 @@ pacman:d=4,o=5,b=112:32b,32p,32b6,32p,32f#6,32p,32d#6,32p,32b6,32f#6,16p,16d#6,1
 		<a href='?'>[ Retour ]</a>";
 	}
 }
-
+else { echo "<h1>LOL<br><br>ERROR 404"; }
 function mot($t) { return "".htmlentities($t); }
 function style() {
 	echo "
 <head>
 	<meta http-equiv='content-type' content='text/html; charset=UTF-8'>
-	<script src='abcjs_editor_1.7-min.js' type='text/javascript'></script>
 	<title>Librairie RTTTL</title>
 </head>
 	<style>
