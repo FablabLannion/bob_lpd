@@ -1,10 +1,6 @@
 <?php
 session_start();
-$mysqlServeur = "127.0.0.1";
-$mysqlUtilisateur = "root";
-$mysqlPassword = "";
-$mysqlNomDeLaBase = "music";
-$tableSQLpre="bww_";
+include("rtttl.config.php");
 
 $_SESSION["langue"]="traduction/fr.php";
 foreach(array("page","x","tout","chor", "d") as $c) { $$c=@$_REQUEST[$c]; }

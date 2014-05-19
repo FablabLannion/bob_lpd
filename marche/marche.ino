@@ -136,4 +136,10 @@ void CenterServos() {
     // waits 100ms for the servos to reach the position 
 }
 
-void BuzzerBeep(){	tone(BuzzerPin, 466); delay(150); noTone(BuzzerPin); }
+void BuzzerBeep() {
+	int tpstone=230;
+	for (int i=0; i <= 999; i++) {
+		digitalWrite(BuzzerPin, HIGH); delayMicroseconds(tpstone);
+		digitalWrite(BuzzerPin, LOW); delayMicroseconds(tpstone);
+	}
+}

@@ -19,4 +19,4 @@ Où
 
 
 Pour faciliter les animations, je commencé à mettre en place un serveur de données
-htt://tipouic.dyndns.info:15380/rtttl.php
+http://fablab-lannion.org/wp-content/bob/
